@@ -1,4 +1,9 @@
-/.vscode
-/bin
-/build
+
 compile_commands.json
+*.json
+compile_commands.json
+*.map
+*.elf
+*.bin
+*.o
+.vscode/SpinUp_2022-2023.code-workspace

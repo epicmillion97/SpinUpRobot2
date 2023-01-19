@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------------*/
 /*                                                                            */
 /*    Module:       main.cpp                                                  */
-/*    Author:       hwalden55275                                              */
+/*    Author:       epicmillion97                                             */
 /*    Created:      Wed Jan 18 2023                                           */
 /*    Description:  V5 project                                                */
 /*                                                                            */
