@@ -15,12 +15,17 @@
 // BackLeft             motor         3               
 // BackRight            motor         4               
 // Controller1          controller                    
+// ColorRoller          motor         5               
+// Flywheel             motor         6               
 // ---- END VEXCODE CONFIGURED DEVICES ----
 
 
 #include "vex.h"
 
 using namespace vex;
+
+competition Competition;
+
 
 // VARIABLES
 float MaxRotationSpeed = .55; // Normal Steering Speed no Turbo
@@ -29,6 +34,10 @@ float TurboRotationSpeed = .85; // Turbo Rotation Speed
 float TurboTranslationSpeed = 1; // Turbo Translation Speed
 float currentMaxRotationSpeed = MaxRotationSpeed;
 float currentMaxTranslationSpeed = MaxTranslationSpeed;
+
+float flywheelStrength = 100;
+
+
 
 float cap(float inputVal, float maxMinVal) { // Cap allow full use of motor range with steering
   if (inputVal > maxMinVal){
@@ -43,9 +52,15 @@ float cap(float inputVal, float maxMinVal) { // Cap allow full use of motor rang
   // else return inputVal
 }
 
+void autonomouscode(){
+  Controller1.Screen.clearScreen();
+  Controller1.Screen.print("Autonomous");
+}
 
-int driveTrainLoop(){ // Controls Drivetrain > Gets Joystick Position & Sets to Motors
-  while(69 == 69){
+
+void driverControl(){
+  Controller1.Screen.clearScreen();
+  while (true){
   //THE MOVE PLACE
   float V = Controller1.Axis3.position(percent); // Forward and backwards
   //float H = Controller1.Axis4.position(percent); // Strafe
@@ -75,15 +90,52 @@ int driveTrainLoop(){ // Controls Drivetrain > Gets Joystick Position & Sets to 
   BackRight.spin(forward);
   //}
 
+  if(Controller1.ButtonY.pressing() == true){
+    ColorRoller.setVelocity(65, percent);
+    ColorRoller.spin(forward);
+  } else if(Controller1.ButtonX.pressing() == true){
+    ColorRoller.setVelocity(-65, percent);
+    ColorRoller.spin(forward);
+  } else{
+    ColorRoller.setVelocity(0, percent);
+  }
+
+  if(Controller1.ButtonR2.pressing() == true) { //This is for the Flywheel
+    Flywheel.setVelocity(flywheelStrength, percent); // Set Velocity of Flywheel to 100%
+    Flywheel.spin(forward); // Start Motor
+  } else {
+    Flywheel.setVelocity(0,percent); // Stop Motor Velocity
+  }
+
+  if(Controller1.ButtonLeft.pressing() == true){ //Decreases flywheel strength
+    if(flywheelStrength > 10){
+      flywheelStrength-=10;
+      Controller1.Screen.clearLine(2);
+      Controller1.Screen.setCursor(2, 1);
+      Controller1.Screen.print(flywheelStrength);
+    }
+    wait(400,msec);
+  } else if(Controller1.ButtonRight.pressing() == true){ //Increases flywheel strength
+    if(flywheelStrength < 100){
+      flywheelStrength+=10;
+      Controller1.Screen.clearLine(2);
+      Controller1.Screen.setCursor(2, 1);
+      Controller1.Screen.print(flywheelStrength);
+    }
+    wait(400,msec);
+  }
+
   wait(25,msec);
   }
-  return 0;
 }
 
-
-
 int main() {
-  task driveTrainLoopTask = task(driveTrainLoop); // Task for drive train
+  Brain.Screen.clearScreen();
+  Controller1.Screen.clearScreen();
+
+  Competition.bStopAllTasksBetweenModes = true; // maybe necessary?
+  Competition.autonomous(autonomouscode);
+  Competition.drivercontrol(driverControl);
   // Initializing Robot Configuration. DO NOT REMOVE!
   vexcodeInit();
   
