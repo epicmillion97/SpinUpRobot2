@@ -39,6 +39,16 @@ float flywheelStrength = 100;
 
 
 
+
+float wheelDiameter = 3.5;
+float wheelCircumference = wheelDiameter * 3.141; //inches
+float turningDiameter = 22;
+
+float tile = 24;
+float translationSpeed = 75;
+float turningSpeed = 50;
+
+
 float cap(float inputVal, float maxMinVal) { // Cap allow full use of motor range with steering
   if (inputVal > maxMinVal){
     return maxMinVal;
@@ -52,10 +62,33 @@ float cap(float inputVal, float maxMinVal) { // Cap allow full use of motor rang
   // else return inputVal
 }
 
+void driveForward(float inches, float speed) {
+    float inchesPerDegree = wheelCircumference / 360;
+    float degrees = inches / inchesPerDegree;
+
+    FrontRight.startRotateFor(degrees, deg, speed, vex::velocityUnits::pct);
+    FrontLeft.startRotateFor(degrees, deg, speed, vex::velocityUnits::pct);
+    BackRight.startRotateFor(degrees, deg, speed, vex::velocityUnits::pct);
+    BackLeft.rotateFor(degrees, deg, speed, vex::velocityUnits::pct);
+}
+
+
+void autonomouscodenon(){
+  Controller1.Screen.clearScreen();
+  Controller1.Screen.print("Autonomous");
+
+}
+
 void autonomouscode(){
   Controller1.Screen.clearScreen();
   Controller1.Screen.print("Autonomous");
+  
 }
+
+
+
+
+
 
 
 void driverControl(){
@@ -128,6 +161,10 @@ void driverControl(){
   wait(25,msec);
   }
 }
+
+
+
+
 
 int main() {
   Brain.Screen.clearScreen();
