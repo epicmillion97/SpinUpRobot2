@@ -17,6 +17,7 @@
 // Controller1          controller                    
 // ColorRoller          motor         5               
 // Flywheel             motor         6               
+// ConveyorTopMotor     motor         12              
 // ---- END VEXCODE CONFIGURED DEVICES ----
 
 
@@ -29,20 +30,22 @@ competition Competition;
 
 // VARIABLES
 float MaxRotationSpeed = .55; // Normal Steering Speed no Turbo
-float MaxTranslationSpeed = 1; // Normal Driving Speed no Turbo
+float MaxTranslationSpeed = .75; // Normal Driving Speed no Turbo
+float MaxConveyorTopSpeed = 40; // Normal Conveyor Top Speed
+float TurboConveyorTopSpeed = 75; // Turbo Conveyor Top Speed
 float TurboRotationSpeed = .85; // Turbo Rotation Speed 
 float TurboTranslationSpeed = 1; // Turbo Translation Speed
 float currentMaxRotationSpeed = MaxRotationSpeed;
 float currentMaxTranslationSpeed = MaxTranslationSpeed;
+float currentMaxConveyorTopSpeed = MaxConveyorTopSpeed;
 
 float flywheelStrength = 100;
 
-
-
+bool turboModeState = false;
 
 float wheelDiameter = 3.5;
 float wheelCircumference = wheelDiameter * 3.141; //inches
-float turningDiameter = 22;
+float turningDiameter = 12.00;
 
 float tile = 24;
 float translationSpeed = 75;
@@ -72,6 +75,65 @@ void driveForward(float inches, float speed) {
     BackLeft.rotateFor(degrees, deg, speed, vex::velocityUnits::pct);
 }
 
+void driveTurn(float degrees, float turningSpeed){
+  float turningRatio = turningDiameter / wheelDiameter;
+  float wheelDegrees = turningRatio * degrees;
+    FrontRight.startRotateFor(-wheelDegrees, deg, turningSpeed, vex::velocityUnits::pct);
+    FrontLeft.startRotateFor(wheelDegrees, deg, turningSpeed, vex::velocityUnits::pct);
+    BackRight.startRotateFor(-wheelDegrees, deg, turningSpeed, vex::velocityUnits::pct);
+    BackLeft.rotateFor(wheelDegrees, deg, turningSpeed, vex::velocityUnits::pct);
+    
+}
+
+void drivegay() {
+    FrontRight.setVelocity(50, percent);
+    FrontRight.spin(forward);
+    FrontLeft.setVelocity(50, percent);
+    FrontLeft.spin(forward);
+    BackRight.setVelocity(50, percent);
+    BackRight.spin(forward);
+    BackLeft.setVelocity(50, percent);
+    BackLeft.spin(forward);
+}
+
+void drivegaystop(){
+    FrontRight.setVelocity(0, percent);
+    FrontRight.spin(forward);
+    FrontLeft.setVelocity(0, percent);
+    FrontLeft.spin(forward);
+    BackRight.setVelocity(0, percent);
+    BackRight.spin(forward);
+    BackLeft.setVelocity(0, percent);
+    BackLeft.spin(forward);
+}
+
+void startColor(){
+  ColorRoller.setVelocity(-45,percent); // Set Velocity of Intake
+  ColorRoller.spin(forward); // Start Motor
+}
+
+void stopColor(){
+  ColorRoller.setVelocity(0, percent);
+}
+
+void startFlywheel(){
+  Flywheel.setVelocity(85, percent);
+  Flywheel.spin(forward);
+}
+
+void stopFlywheel(){
+  Flywheel.setVelocity(0, percent);
+}
+void startConveyor(){
+  ConveyorTopMotor.setVelocity(40, percent);
+  ConveyorTopMotor.spin(forward);
+}
+
+void stopConveyor(){
+  ConveyorTopMotor.setVelocity(0, percent);
+}
+
+
 
 void autonomouscodenon(){
   Controller1.Screen.clearScreen();
@@ -79,15 +141,69 @@ void autonomouscodenon(){
 
 }
 
-void autonomouscode(){
+void autonomouscodeTwoTile(){
   Controller1.Screen.clearScreen();
-  Controller1.Screen.print("Autonomous");
+  Controller1.Screen.print("Autonomous 2 Tile");
+  driveForward(4, translationSpeed);
+  driveTurn(90, turningSpeed);
+  wait(500, msec);
+  driveForward(24, translationSpeed);
+  wait(500, msec);
+  driveTurn(91, turningSpeed);
+  wait(500, msec);
+  startColor();
+  wait(500, msec);
+  driveForward(4, translationSpeed);
+  wait(500, msec);
+  drivegay();
+  wait(1, sec);
+  startColor();
+  drivegaystop();
+  wait(200, msec);
+  driveForward(-2, translationSpeed);
+  stopColor();
+}
+
+void autonomouscodeTurnShoot(){
+  Controller1.Screen.clearScreen();
+  Controller1.Screen.print("Auto TURNSHO");
+  driveForward(8, translationSpeed);
+  wait(500, msec);
+  driveTurn(-90, turningSpeed);
+  wait(500, msec);
+  startFlywheel();
+  wait(2,sec);
+  startConveyor();
+  wait(1,sec);
+  stopConveyor();
+  wait(1,sec);
+  startConveyor();
+  wait(1.5,sec);
+  stopConveyor();
+  stopFlywheel();
   
 }
 
 
-
-
+void turboModeChanger(){
+  if(turboModeState == false){
+    currentMaxRotationSpeed = MaxRotationSpeed;
+    currentMaxTranslationSpeed = MaxTranslationSpeed;
+    currentMaxConveyorTopSpeed = MaxConveyorTopSpeed;
+    Controller1.Screen.clearLine(2);
+    Controller1.Screen.setCursor(2, 1);
+    Controller1.Screen.print("No Turbo");
+  } else{
+    currentMaxRotationSpeed = TurboRotationSpeed;
+    currentMaxTranslationSpeed = TurboTranslationSpeed;
+    currentMaxConveyorTopSpeed = TurboConveyorTopSpeed;
+    Controller1.Screen.clearLine(2);
+    Controller1.Screen.setCursor(2, 1);
+    Controller1.Screen.print("Turbo");
+  }
+  turboModeState = !turboModeState;
+  wait(200, msec);
+}
 
 
 
@@ -133,12 +249,27 @@ void driverControl(){
     ColorRoller.setVelocity(0, percent);
   }
 
+  if(Controller1.ButtonL2.pressing() == true){
+    ConveyorTopMotor.setVelocity(currentMaxConveyorTopSpeed, percent);
+    ConveyorTopMotor.spin(forward);
+  } else if(Controller1.ButtonL1.pressing() == true){
+    ConveyorTopMotor.setVelocity(-currentMaxConveyorTopSpeed, percent);
+    ConveyorTopMotor.spin(forward);
+  } else{
+    ConveyorTopMotor.setVelocity(0, percent);
+  }
+
   if(Controller1.ButtonR2.pressing() == true) { //This is for the Flywheel
     Flywheel.setVelocity(flywheelStrength, percent); // Set Velocity of Flywheel to 100%
     Flywheel.spin(forward); // Start Motor
   } else {
     Flywheel.setVelocity(0,percent); // Stop Motor Velocity
   }
+
+  if(Controller1.ButtonR1.pressing() == true){
+    turboModeChanger();
+  }
+
 
   if(Controller1.ButtonLeft.pressing() == true){ //Decreases flywheel strength
     if(flywheelStrength > 10){
@@ -163,15 +294,12 @@ void driverControl(){
 }
 
 
-
-
-
 int main() {
   Brain.Screen.clearScreen();
   Controller1.Screen.clearScreen();
 
   Competition.bStopAllTasksBetweenModes = true; // maybe necessary?
-  Competition.autonomous(autonomouscode);
+  Competition.autonomous(autonomouscodeTwoTile);
   Competition.drivercontrol(driverControl);
   // Initializing Robot Configuration. DO NOT REMOVE!
   vexcodeInit();

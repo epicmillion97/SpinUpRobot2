@@ -10,6 +10,7 @@ extern motor BackRight;
 extern controller Controller1;
 extern motor ColorRoller;
 extern motor Flywheel;
+extern motor ConveyorTopMotor;
 
 /**
  * Used to initialize code/tasks/devices added using tools in VEXcode Pro.
